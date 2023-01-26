@@ -34,6 +34,9 @@ func (b *Backend) NetworkStatus(ctx context.Context, req *types.NetworkRequest) 
 
 	if !ready {
 		genesisBlock := b.getGenesisBlock()
+		if genesisBlock == nil {
+			return nil, service.WrapError(service.ErrNotReady, "p-chain genesis block was not initialized")
+		}
 		return &types.NetworkStatusResponse{
 			CurrentBlockIdentifier: b.getGenesisIdentifier(),
 			CurrentBlockTimestamp:  genesisBlock.Timestamp,

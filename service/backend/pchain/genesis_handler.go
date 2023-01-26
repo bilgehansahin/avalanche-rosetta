@@ -95,6 +95,9 @@ func (gh *gHandler) isGenesisBlockRequest(index int64, hash string) (bool, error
 // getGenesisBlock is a simple getter for genesisBlk. It does not check
 // whether genesisBlk has been duly initialized. Check is up to caller
 func (gh *gHandler) getGenesisBlock() *indexer.ParsedGenesisBlock {
+	if loaded := gh.lazyLoadGenesisBlk(); !loaded {
+		return nil
+	}
 	return gh.genesisBlk
 }
 
