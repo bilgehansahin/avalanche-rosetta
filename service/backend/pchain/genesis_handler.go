@@ -51,6 +51,10 @@ type gHandler struct {
 }
 
 func (gh *gHandler) loadGenesisBlk() error {
+	if gh.indexerParser == nil {
+		return nil
+	}
+
 	genesisBlk, err := gh.indexerParser.GetGenesisBlock(context.Background())
 	if err != nil {
 		return err
