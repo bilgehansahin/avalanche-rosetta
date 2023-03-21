@@ -185,7 +185,7 @@ func (b *Backend) fetchBlkDependencies(ctx context.Context, txs []*txs.Tx) (pmap
 	close(dependencyTxChan)
 
 	for dTx := range dependencyTxChan {
-		blockDeps[dTx.Tx.ID()] = dTx
+		blockDeps[dTx.TxID()] = dTx
 	}
 
 	return blockDeps, nil
@@ -198,7 +198,8 @@ func (b *Backend) fetchDependencyTx(ctx context.Context, txID ids.ID, out chan *
 		allocationTx, err := b.buildGenesisAllocationTx()
 		if allocationTx != nil {
 			out <- &pmapper.SingleTxDependency{
-				Tx: allocationTx,
+				Tx:                    allocationTx,
+				IsGenesisAllocationTx: true,
 			}
 		}
 		return err

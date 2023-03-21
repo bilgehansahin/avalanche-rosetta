@@ -3,13 +3,14 @@ package pchain
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanche-rosetta/constants"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/utils"
 	"github.com/ava-labs/avalanchego/utils/formatting/address"
 	"github.com/ava-labs/avalanchego/vms/components/avax"
 	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
 	"github.com/coinbase/rosetta-sdk-go/types"
+
+	"github.com/ava-labs/avalanche-rosetta/constants"
 )
 
 type BlockTxDependencies map[ids.ID]*SingleTxDependency
@@ -101,6 +102,10 @@ type SingleTxDependency struct {
 	// input from a tx dependent on it
 	Tx *txs.Tx
 
+	// Genesis allocation transactions are referred using empty id.
+	// This field helps override the default transaction id with 11111111111111111111111111111111LpoYY
+	IsGenesisAllocationTx bool
+
 	// Staker txs are rewarded at the end of staking period
 	// with some utxos appended to staker txs' ones.
 	// [RewardUTXOs] collects those reward utxos
@@ -109,6 +114,13 @@ type SingleTxDependency struct {
 	// [utxosMap] caches mapping of Tx utxoID --> Tx utxo
 	// for both Tx and RewardUTXOs
 	utxosMap map[avax.UTXOID]*avax.UTXO
+}
+
+func (d *SingleTxDependency) TxID() ids.ID {
+	if d.IsGenesisAllocationTx {
+		return ids.Empty
+	}
+	return d.Tx.ID()
 }
 
 func (d *SingleTxDependency) GetUtxos() map[avax.UTXOID]*avax.UTXO {
@@ -157,7 +169,7 @@ func (d *SingleTxDependency) GetUtxos() map[avax.UTXOID]*avax.UTXO {
 		}
 
 		// add collected utxos
-		txID := d.Tx.ID()
+		txID := d.TxID()
 		for i, out := range outsToAdd {
 			utxoID := avax.UTXOID{
 				TxID:        txID,
